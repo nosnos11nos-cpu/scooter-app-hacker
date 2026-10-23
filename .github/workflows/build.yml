@@ -6,7 +6,7 @@ on:
 
 jobs:
   build-android:
-    runs-on: ubuntu-22.04 # Используем стабильную версию Ubuntu
+    runs-on: ubuntu-22.04 # Стабильная версия Ubuntu
 
     steps:
       - name: Checkout Code
@@ -15,7 +15,7 @@ jobs:
       - name: Set up Python 3.10
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10' # КРИТИЧЕСКИ ВАЖНО: 3.10 или 3.11, но не 3.12+
+          python-version: '3.10' # КРИТИЧЕСКИ ВАЖНО: именно 3.10
 
       - name: Install System Dependencies
         run: |
@@ -25,12 +25,14 @@ jobs:
       - name: Install Buildozer and Cython
         run: |
           python -m pip install --upgrade pip
-          pip install --user --upgrade buildozer "cython<3.0" virtualenv
+          # КРИТИЧЕСКИ ВАЖНО: Cython должен быть 0.29.33, а не 3.x
+          pip install --user --upgrade buildozer "cython==0.29.33" virtualenv
 
       - name: Build with Buildozer
         run: |
           export PATH=$PATH:~/.local/bin
-          # Запускаем сборку
+          # Очищаем кеш перед сборкой, чтобы не тянуть старые ошибки
+          buildozer android clean
           buildozer -v android debug
 
       - name: Upload APK Artifact
