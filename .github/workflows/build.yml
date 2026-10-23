@@ -7,23 +7,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # ШАГ 1: Устанавливаем системные библиотеки для сборки libffi/cryptography
-      - name: Install system dependencies
+      - name: Build with Buildozer (Official Docker Image)
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libltdl-dev libtool automake autoconf pkg-config zlib1g-dev libssl-dev
+          docker run --rm \
+            -v "${{ github.workspace }}":/home/user/hostcwd \
+            -v "$HOME/.buildozer":/home/user/.buildozer \
+            kivy/buildozer:latest android debug
 
-      # ШАГ 2: Собираем APK (используем готовый Docker-образ с правильными версиями)
-      - name: Build with Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
-        with:
-          command: android debug
-          buildozer_version: stable
-
-      # ШАГ 3: Загружаем готовый APK
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: package
-          path: ${{ steps.buildozer.outputs.filename }}
+          path: bin/*.apk
